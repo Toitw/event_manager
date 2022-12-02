@@ -1,6 +1,7 @@
 require "csv"
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'time'
 
 
 def clean_zipcode(zipcode)
@@ -32,6 +33,16 @@ def save_thank_you_letter(id, form_letter)
   end
 end
 
+hour_arr = []
+
+def get_reg_hour(reg_time, arr)
+  reg_hour = Time.strptime(reg_time, "%m/%e/%y %k:%M")
+  reg_hour = reg_hour.strftime("%H").to_i
+  arr.push(reg_hour)
+  reg_hour
+end
+
+
 def clean_home_phone(homephone)
     clean_number = homephone.gsub(/[^\d]/, "")
     if clean_number[0] != 1 && clean_number.length == 11
@@ -45,6 +56,30 @@ def clean_home_phone(homephone)
     end
 end
 
+def reg_hour_frecuency(hour_arr)
+  hour_hash = hour_arr.each_with_object(Hash.new(0)) do |item, hash|
+    hash[item] += 1
+  end
+  p hour_hash.sort_by {|k, v| v}.reverse.to_h
+end
+
+day_arr = []
+
+def get_reg_day(reg_time, arr)
+  full_date = Date.strptime(reg_time, "%m/%e/%y %k:%M")
+  date = full_date.strftime("%e/%m/%y").to_i
+  date = Date.new(date).wday
+  arr.push(date)
+  date
+end
+
+def reg_day_frecuency(day_arr)
+  day_hash = day_arr.each_with_object(Hash.new(0)) do |item, hash|
+    hash[item] += 1
+  end
+  p day_hash.sort_by {|k,v| v}.reverse.to_h
+end
+
 puts "Event Manager Initialized!"
 
 template_letter = File.read("form_letter.html")
@@ -55,6 +90,7 @@ contents = CSV.open(
     headers: true,
     header_converters: :symbol
 )
+
 contents.each do |row|
     id = row[0]
     name = row[:first_name]
@@ -63,9 +99,20 @@ contents.each do |row|
 
     home_phone = clean_home_phone(row[:homephone])
 
+    reg_hour = get_reg_hour(row[:regdate], hour_arr)
+
+    reg_day = get_reg_day(row[:regdate], day_arr)
+
+=begin
     legislators = legislators_by_zipcode(zipcode)
 
     form_letter = erb_template.result(binding)
 
     save_thank_you_letter(id, form_letter)
+=end
 end
+
+reg_hour_frecuency(hour_arr)
+reg_day_frecuency(day_arr)
+
+
