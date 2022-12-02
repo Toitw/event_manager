@@ -64,6 +64,7 @@ def reg_hour_frecuency(hour_arr)
 end
 
 day_arr = []
+cal = {0=>"Sunday", 1=>"Monday", 2=>"Tuesday", 3=>"Wednesday", 4=>"Thursday", 5=>"Friday", 6=>"Saturday"}
 
 def get_reg_day(reg_time, arr)
   full_date = Date.strptime(reg_time, "%m/%e/%y %k:%M")
@@ -73,11 +74,13 @@ def get_reg_day(reg_time, arr)
   date
 end
 
-def reg_day_frecuency(day_arr)
+def reg_day_frecuency(day_arr, cal_hash)
   day_hash = day_arr.each_with_object(Hash.new(0)) do |item, hash|
+    item = cal_hash[item]
     hash[item] += 1
   end
-  p day_hash.sort_by {|k,v| v}.reverse.to_h
+  day_hash = day_hash.sort_by {|k,v| v}.reverse.to_h
+  p day_hash
 end
 
 puts "Event Manager Initialized!"
@@ -113,6 +116,6 @@ contents.each do |row|
 end
 
 reg_hour_frecuency(hour_arr)
-reg_day_frecuency(day_arr)
+reg_day_frecuency(day_arr, cal)
 
 
